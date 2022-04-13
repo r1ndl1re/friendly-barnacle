@@ -9,9 +9,6 @@ use std::path::Path;
 
 #[tokio::main]
 async fn main() -> Result<(), sqlx::Error> {
-    let video_info = parse_video_dat("0000.dat.gz");
-    println!("{:?}", video_info);
-
     let postgress_info = "postgres://app_user:hogehoge@localhost:5432/defaultdb";
     let pool = PgPoolOptions::new()
         .max_connections(5)
@@ -30,11 +27,21 @@ async fn main() -> Result<(), sqlx::Error> {
         .await
         .expect("failed to create video_tag_relation table");
 
-    let video_id = insert_video(&pool, &video_info).await.unwrap();
-    println!("{:?}", video_id);
+    let video_infos = parse_video_dat("0000.dat.gz");
 
-    let tag_ids = insert_tags(&pool, &video_info.tags).await.unwrap();
-    println!("{:?}", tag_ids);
+    for video_info in video_infos {
+        add_video(&pool, &video_info).await?;
+    }
+    Ok(())
+}
+
+async fn add_video(
+    pool: &Pool<Postgres>,
+    video_info: &models::VideoInfo,
+) -> Result<(), sqlx::Error> {
+    let video_id = upsert_video(&pool, &video_info).await?;
+    let tag_ids = insert_tags(&pool, &video_info.tags).await?;
+    insert_video_tag_relation(&pool, video_id, &tag_ids).await?;
     Ok(())
 }
 
@@ -47,11 +54,19 @@ fn read_gz<P: AsRef<Path>>(path: P) -> String {
     s
 }
 
-fn parse_video_dat<P: AsRef<Path>>(path: P) -> models::VideoInfo {
+fn parse_video_dat<P: AsRef<Path>>(path: P) -> Vec<models::VideoInfo> {
     let s = read_gz(path);
     let s: Vec<&str> = s.split("\n").collect();
-    let video_info: models::VideoInfo = serde_json::from_str(&s[0]).unwrap();
-    video_info
+    let mut video_infos = Vec::with_capacity(s.len());
+    println!("{:?}", s);
+    for s_ in s {
+        let video_info = serde_json::from_str::<models::VideoInfo>(&s_);
+        match video_info {
+            Ok(n) => video_infos.push(n),
+            Err(_) => continue,
+        };
+    }
+    video_infos
 }
 
 async fn create_video_table(pool: &Pool<Postgres>) -> Result<(), sqlx::Error> {
@@ -117,6 +132,39 @@ async fn create_relation_table(pool: &Pool<Postgres>) -> Result<(), sqlx::Error>
     Ok(())
 }
 
+async fn upsert_video(
+    pool: &Pool<Postgres>,
+    video_info: &models::VideoInfo,
+) -> Result<i32, sqlx::Error> {
+    let r = check_video(pool, &video_info.video_id).await?;
+    let video_id = match r {
+        Some(n) => n.id,
+        None => insert_video(pool, video_info).await?,
+    };
+    Ok(video_id)
+}
+
+async fn check_video(
+    pool: &Pool<Postgres>,
+    video_code: &str,
+) -> Result<Option<models::Video>, sqlx::Error> {
+    let sql = "
+    SELECT
+        *
+    FROM
+        video
+    WHERE
+        code = $1
+    ";
+
+    let r = sqlx::query_as::<_, models::Video>(sql)
+        .bind(video_code)
+        .fetch_optional(pool)
+        .await?;
+
+    Ok(r)
+}
+
 async fn insert_video(
     pool: &Pool<Postgres>,
     video_info: &models::VideoInfo,
@@ -166,7 +214,6 @@ async fn insert_video(
         .bind(&video_info.size_low)
         .fetch_one(pool)
         .await?;
-    println!("{:?}", r);
     Ok(r.id)
 }
 
@@ -184,15 +231,73 @@ async fn insert_tags(
         RETURNING *
     ";
 
+    let sql_exist = "SELECT * FROM tag WHERE name = $1";
+
     for tag_ in tags {
-        let r = sqlx::query_as::<_, models::Tag>(sql)
+        // check tag already exists
+        let r = sqlx::query_as::<_, models::Tag>(sql_exist)
             .bind(&tag_.tag)
-            .fetch_one(pool)
-            .await;
-        match r {
-            Ok(n) => tag_ids.push(n.id),
-            Err(_) => continue,
-        }
+            .fetch_optional(pool)
+            .await?;
+
+        let tag_id = match r {
+            Some(n) => n.id,
+            None => {
+                let r = sqlx::query_as::<_, models::Tag>(sql)
+                    .bind(&tag_.tag)
+                    .fetch_one(pool)
+                    .await?;
+                r.id
+            }
+        };
+
+        tag_ids.push(tag_id)
     }
     Ok(tag_ids)
+}
+
+async fn insert_video_tag_relation(
+    pool: &Pool<Postgres>,
+    video_id: i32,
+    tag_ids: &Vec<i32>,
+) -> Result<(), sqlx::Error> {
+    let sql = "
+        INSERT INTO video_tag_relation (
+            video_id
+        ,   tag_id
+        ) VALUES (
+            $1,
+            $2
+        )
+    ";
+
+    let sql_exists = "
+        SELECT
+            id
+        FROM
+            video_tag_relation
+        WHERE
+            video_id = $1
+            AND tag_id =$2
+        ";
+    for tag_id in tag_ids {
+        // check relation already exists
+        let r = sqlx::query(sql_exists)
+            .bind(video_id)
+            .bind(tag_id)
+            .fetch_optional(pool)
+            .await?;
+
+        match r {
+            Some(_) => continue,
+            None => {
+                sqlx::query(sql)
+                    .bind(video_id)
+                    .bind(tag_id)
+                    .execute(pool)
+                    .await?;
+            }
+        }
+    }
+    Ok(())
 }
