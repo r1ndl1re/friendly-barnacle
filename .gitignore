@@ -17,3 +17,7 @@ Cargo.lock
 secrets.txt
 
 *.gz
+
+*.html
+*.zip
+*.jsonl

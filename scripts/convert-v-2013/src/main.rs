@@ -1,11 +1,9 @@
 mod models;
+mod v2013;
+mod v2021;
 
-use flate2::read::GzDecoder;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{Pool, Postgres};
-use std::fs::File;
-use std::io::{BufReader, Read};
-use std::path::Path;
 
 #[tokio::main]
 async fn main() -> Result<(), sqlx::Error> {
@@ -27,46 +25,12 @@ async fn main() -> Result<(), sqlx::Error> {
         .await
         .expect("failed to create video_tag_relation table");
 
-    let video_infos = parse_video_dat("0000.dat.gz");
+    let video_infos = v2013::parse_video("0000.dat.gz");
 
     for video_info in video_infos {
         add_video(&pool, &video_info).await?;
     }
     Ok(())
-}
-
-async fn add_video(
-    pool: &Pool<Postgres>,
-    video_info: &models::VideoInfo,
-) -> Result<(), sqlx::Error> {
-    let video_id = upsert_video(&pool, &video_info).await?;
-    let tag_ids = insert_tags(&pool, &video_info.tags).await?;
-    insert_video_tag_relation(&pool, video_id, &tag_ids).await?;
-    Ok(())
-}
-
-fn read_gz<P: AsRef<Path>>(path: P) -> String {
-    let file = File::open(path).unwrap();
-    let f = BufReader::new(file);
-    let mut gz = GzDecoder::new(f);
-    let mut s = String::new();
-    gz.read_to_string(&mut s).unwrap();
-    s
-}
-
-fn parse_video_dat<P: AsRef<Path>>(path: P) -> Vec<models::VideoInfo> {
-    let s = read_gz(path);
-    let s: Vec<&str> = s.split("\n").collect();
-    let mut video_infos = Vec::with_capacity(s.len());
-    println!("{:?}", s);
-    for s_ in s {
-        let video_info = serde_json::from_str::<models::VideoInfo>(&s_);
-        match video_info {
-            Ok(n) => video_infos.push(n),
-            Err(_) => continue,
-        };
-    }
-    video_infos
 }
 
 async fn create_video_table(pool: &Pool<Postgres>) -> Result<(), sqlx::Error> {
@@ -129,6 +93,16 @@ async fn create_relation_table(pool: &Pool<Postgres>) -> Result<(), sqlx::Error>
     ";
 
     sqlx::query(sql).execute(pool).await?;
+    Ok(())
+}
+
+pub(crate) async fn add_video(
+    pool: &Pool<Postgres>,
+    video_info: &models::VideoInfo,
+) -> Result<(), sqlx::Error> {
+    let video_id = upsert_video(&pool, &video_info).await?;
+    let tag_ids = insert_tags(&pool, &video_info.tags).await?;
+    insert_video_tag_relation(&pool, video_id, &tag_ids).await?;
     Ok(())
 }
 
