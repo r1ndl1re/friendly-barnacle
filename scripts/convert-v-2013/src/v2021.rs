@@ -11,15 +11,17 @@ pub(crate) fn parse_video<P: AsRef<Path>>(path: P) -> Vec<VideoInfo> {
     println!("{:?}", s);
 
     for s_ in s {
-        serde_json::from_str::<VideoInfo>(s_).map(|n| video_infos.push(n));
+        serde_json::from_str::<VideoInfo>(s_)
+            .map(|n| video_infos.push(n))
+            .unwrap();
     }
     video_infos
 }
 
 fn read_jsonl<P: AsRef<Path>>(path: P) -> String {
     let file = File::open(path).unwrap();
-    let f = BufReader::new(file);
+    let mut f = BufReader::new(file);
     let mut s = String::new();
-    f.read_to_string(&mut s);
+    f.read_to_string(&mut s).unwrap();
     s
 }

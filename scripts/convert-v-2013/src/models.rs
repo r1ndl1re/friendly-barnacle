@@ -11,27 +11,21 @@ pub(crate) struct Comment2013 {
 }
 
 #[derive(Debug, Deserialize)]
-pub(crate) struct VideoTagInfo {
-    pub tag: String,
-    pub category: Option<u8>,
-    pub lock: Option<u8>,
-}
-
-#[derive(Debug, Deserialize)]
 pub(crate) struct VideoInfo {
     pub video_id: String,
     pub title: String,
     pub description: String,
-    pub thumbnail_url: String,
+    pub watch_num: i32,
+    pub comment_num: i32,
+    pub mylist_num: i32,
+    pub category: Option<String>,
+    pub tags: String,
     pub upload_time: chrono::DateTime<chrono::Local>,
     pub length: i32,
-    pub movie_type: String,
+    pub file_type: String,
     pub size_high: i32,
     pub size_low: i32,
-    pub view_counter: i32,
-    pub comment_counter: i32,
-    pub mylist_counter: i32,
-    pub tags: Vec<VideoTagInfo>,
+    pub thumbnail_url: Option<String>,
 }
 
 #[derive(Debug, FromRow)]
