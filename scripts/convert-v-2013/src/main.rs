@@ -2,6 +2,7 @@ mod crud;
 mod ddl;
 mod models;
 mod v2013;
+mod v2016;
 mod v2021;
 
 use sqlx::postgres::PgPoolOptions;
@@ -27,7 +28,7 @@ async fn main() -> Result<(), sqlx::Error> {
         .await
         .expect("failed to create video_tag_relation table");
 
-    let video_infos = v2021::parse_video("./nicocomm/data.20211222/video/0000.jsonl");
+    let video_infos = v2016::parse_video("./nicocomm/data.20161216/video/0000.zip");
     println!("{:?}", video_infos[0].tags);
 
     for video_info in video_infos {

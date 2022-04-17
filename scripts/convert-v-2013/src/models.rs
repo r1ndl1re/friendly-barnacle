@@ -27,7 +27,6 @@ pub(crate) struct VideoInfo {
     pub file_type: String,
     pub size_high: u32,
     pub size_low: u32,
-    pub thumbnail_url: Option<String>,
 }
 
 #[derive(Debug, FromRow)]
@@ -42,7 +41,6 @@ pub(crate) struct Video {
     pub comment_num: i32,
     pub mylist_num: i32,
     pub category: Option<String>,
-    pub thumbnail_url: Option<String>,
     pub length: i32,
     pub file_type: String,
     pub upload_time: chrono::DateTime<chrono::Utc>,

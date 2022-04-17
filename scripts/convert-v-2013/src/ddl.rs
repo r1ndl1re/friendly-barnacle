@@ -13,7 +13,6 @@ pub(crate) async fn create_video_table(pool: &Pool<Postgres>) -> Result<(), sqlx
             comment_num INTEGER,
             mylist_num INTEGER,
             category VARCHAR(255),
-            thumbnail_url VARCHAR(255),
             length INTEGER,
             file_type VARCHAR(3),
             upload_time TIMESTAMP WITH TIME ZONE,

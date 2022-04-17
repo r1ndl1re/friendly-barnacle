@@ -87,7 +87,6 @@ async fn insert_video(
         .bind(&video_info.watch_num)
         .bind(&video_info.comment_num)
         .bind(&video_info.mylist_num)
-        .bind(&video_info.thumbnail_url)
         .bind(&video_info.length)
         .bind(&video_info.file_type)
         .bind(&video_info.upload_time)
