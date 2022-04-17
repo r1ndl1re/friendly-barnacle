@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_aux::prelude::deserialize_number_from_string;
 use sqlx::FromRow;
 
@@ -11,7 +11,7 @@ pub(crate) struct Comment2013 {
     pub command: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub(crate) struct VideoInfo {
     pub video_id: String,
     pub title: String,
@@ -21,12 +21,17 @@ pub(crate) struct VideoInfo {
     pub comment_num: u32,
     pub mylist_num: u32,
     pub category: Option<String>,
-    pub tags: String,
     pub upload_time: chrono::DateTime<chrono::Local>,
     pub length: u32,
     pub file_type: String,
     pub size_high: u32,
     pub size_low: u32,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub(crate) struct TagInfo {
+    video_id: String,
+    tag_name: String,
 }
 
 #[derive(Debug, FromRow)]

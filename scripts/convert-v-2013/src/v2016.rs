@@ -35,7 +35,6 @@ impl VideoInfo2016 {
             comment_num: self.comment_num,
             mylist_num: self.mylist_num,
             category: self.category,
-            tags,
             upload_time: self.upload_time.with_timezone(&chrono::Local),
             length: self.length,
             file_type: self.file_type,

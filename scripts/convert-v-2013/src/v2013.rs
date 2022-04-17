@@ -41,7 +41,6 @@ impl VideoInfo2013 {
             comment_num: self.comment_num,
             mylist_num: self.mylist_num,
             category: None,
-            tags: tags,
             upload_time: self.upload_time,
             length: self.length,
             file_type: self.movie_type,
