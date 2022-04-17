@@ -56,7 +56,6 @@ async fn insert_video(
         ,   watch_num
         ,   comment_num
         ,   mylist_num
-        ,   thumbnail_url
         ,   length
         ,   file_type
         ,   upload_time
@@ -76,9 +75,8 @@ async fn insert_video(
         ,   $10
         ,   $11
         ,   $12
-        ,   $13
         )
-        RETURNING id
+        RETURNING *
     ";
     let r = sqlx::query_as::<_, models::Video>(sql)
         .bind(&video_info.video_id)

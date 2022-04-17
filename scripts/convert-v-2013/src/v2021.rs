@@ -10,9 +10,11 @@ pub(crate) fn parse_video<P: AsRef<Path>>(path: P) -> Vec<VideoInfo> {
     let mut video_infos = Vec::with_capacity(s.len());
 
     for s_ in s {
-        serde_json::from_str::<VideoInfo>(s_)
-            .map(|n| video_infos.push(n))
-            .unwrap();
+        let video_info = serde_json::from_str::<VideoInfo>(s_);
+        match video_info {
+            Ok(n) => video_infos.push(n),
+            Err(_) => continue,
+        }
     }
     video_infos
 }
