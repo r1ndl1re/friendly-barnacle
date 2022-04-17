@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use serde_aux::prelude::deserialize_number_from_string;
 use sqlx::FromRow;
 
 #[derive(Debug, Deserialize)]
@@ -15,16 +16,17 @@ pub(crate) struct VideoInfo {
     pub video_id: String,
     pub title: String,
     pub description: String,
-    pub watch_num: i32,
-    pub comment_num: i32,
-    pub mylist_num: i32,
+    pub watch_num: u32,
+    #[serde(deserialize_with = "deserialize_number_from_string")]
+    pub comment_num: u32,
+    pub mylist_num: u32,
     pub category: Option<String>,
     pub tags: String,
     pub upload_time: chrono::DateTime<chrono::Local>,
-    pub length: i32,
+    pub length: u32,
     pub file_type: String,
-    pub size_high: i32,
-    pub size_low: i32,
+    pub size_high: u32,
+    pub size_low: u32,
     pub thumbnail_url: Option<String>,
 }
 

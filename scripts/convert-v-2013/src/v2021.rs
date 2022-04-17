@@ -8,7 +8,6 @@ pub(crate) fn parse_video<P: AsRef<Path>>(path: P) -> Vec<VideoInfo> {
     let s = read_jsonl(path);
     let s: Vec<&str> = s.split("\n").collect();
     let mut video_infos = Vec::with_capacity(s.len());
-    println!("{:?}", s);
 
     for s_ in s {
         serde_json::from_str::<VideoInfo>(s_)

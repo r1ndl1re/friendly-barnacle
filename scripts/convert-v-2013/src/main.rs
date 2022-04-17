@@ -6,12 +6,13 @@ mod v2021;
 
 use sqlx::postgres::PgPoolOptions;
 
+const DATABASE_URL: &str = "postgres://app_user:hogehoge@localhost:5432/defaultdb";
+
 #[tokio::main]
 async fn main() -> Result<(), sqlx::Error> {
-    let postgress_info = "postgres://app_user:hogehoge@localhost:5432/defaultdb";
     let pool = PgPoolOptions::new()
         .max_connections(5)
-        .connect(postgress_info)
+        .connect(DATABASE_URL)
         .await?;
 
     _ = ddl::create_video_table(&pool)
@@ -26,7 +27,8 @@ async fn main() -> Result<(), sqlx::Error> {
         .await
         .expect("failed to create video_tag_relation table");
 
-    let video_infos = v2013::parse_video("0000.dat.gz");
+    let video_infos = v2021::parse_video("./nicocomm/data.20211222/video/0000.jsonl");
+    println!("{:?}", video_infos[0].tags);
 
     for video_info in video_infos {
         crud::add_video(&pool, &video_info).await?;
