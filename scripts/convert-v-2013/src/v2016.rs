@@ -88,7 +88,7 @@ pub(crate) fn create<P: AsRef<Path>>(path: P, extension: &str) -> Result<(), csv
         println!("video: {}", p.display());
         let video_infos = parse_video(p);
         for video_info in video_infos {
-            writer.serialize(video_info)?;
+            writer.serialize(video_info.remove_tag())?;
         }
     }
     writer.flush().unwrap();

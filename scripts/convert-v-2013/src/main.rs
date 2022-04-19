@@ -18,7 +18,7 @@ fn main() {
     v2013::create(path_2013, "gz").unwrap();
 
     // v2021::create_tag_csv(path_2021, "jsonl").unwrap();
-    v2016::create_tag_csv(path_2018, "zip").unwrap();
-    v2016::create_tag_csv(path_2016, "zip").unwrap();
-    v2013::create_tag_csv(path_2013, "gz").unwrap();
+    // v2016::create_tag_csv(path_2018, "zip").unwrap();
+    // v2016::create_tag_csv(path_2016, "zip").unwrap();
+    // v2013::create_tag_csv(path_2013, "gz").unwrap();
 }
