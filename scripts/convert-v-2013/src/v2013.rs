@@ -24,8 +24,11 @@ struct VideoInfo2013 {
     movie_type: String,
     size_high: u32,
     size_low: u32,
+    #[serde(alias = "view_counter")]
     watch_num: u32,
+    #[serde(alias = "comment_counter")]
     comment_num: u32,
+    #[serde(alias = "mylist_counter")]
     mylist_num: u32,
     tags: Vec<VideoTagInfo2013>,
 }
