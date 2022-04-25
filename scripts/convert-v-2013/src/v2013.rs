@@ -10,8 +10,6 @@ use std::path::Path;
 #[derive(Debug, Deserialize)]
 struct VideoTagInfo2013 {
     tag: String,
-    category: Option<u8>,
-    lock: Option<u8>,
 }
 
 #[derive(Debug, Deserialize)]
