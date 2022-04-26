@@ -1,0 +1,12 @@
+[package]
+edition = "2021"
+name = "f-barnacle"
+version = "0.1.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+axum = "0.5"
+sea-orm = {version = "^0", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros"]}
+sqlx = {version = "0.5", features = ["runtime-tokio-rustls", "postgres"]}
+tokio = {version = "1", features = ["full"]}
