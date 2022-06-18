@@ -37,3 +37,18 @@ impl Related<super::video_tag_relation::Entity> for Entity {
 }
 
 impl ActiveModelBehavior for ActiveModel {}
+
+#[derive(Debug)]
+pub struct VideoToTag;
+
+impl Linked for VideoToTag {
+    type FromEntity = super::video::Entity;
+    type ToEntity = super::tag::Entity;
+
+    fn link(&self) -> Vec<RelationDef> {
+        vec![
+            super::video_tag_relation::Relation::Video.def().rev(),
+            super::video_tag_relation::Relation::Tag.def(),
+        ]
+    }
+}
