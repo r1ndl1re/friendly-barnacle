@@ -2,17 +2,27 @@ mod entity;
 
 use std::net::SocketAddr;
 
-use axum::extract::Query;
-use axum::{extract::Extension, routing::get, Router};
-use entity::prelude::*;
-use entity::{tag, video};
+use axum::{
+    extract::{Extension, Query},
+    response::Json,
+    routing::get,
+    Router,
+};
+use entity::{prelude::*, video};
 use sea_orm::{
     ColumnTrait, ConnectOptions, Database, DatabaseConnection, EntityTrait, QueryFilter,
 };
+use serde::Deserialize;
+use tower::ServiceBuilder;
 
-async fn read_video(db: &DatabaseConnection, video_id: &str) -> Option<video::Model> {
+#[derive(Deserialize)]
+struct VideoQuery {
+    video_id: String,
+}
+
+async fn read_video(db: &DatabaseConnection, video_code: &str) -> Option<video::Model> {
     let video = Video::find()
-        .filter(video::Column::Code.eq(video_id))
+        .filter(video::Column::Code.eq(video_code))
         .one(db)
         .await
         .unwrap();
@@ -25,10 +35,11 @@ async fn root() -> &'static str {
 
 async fn get_video(
     Extension(db): Extension<DatabaseConnection>,
-    video_id: Query<&str>,
-) -> Option<video::Model> {
+    video_id: Query<VideoQuery>,
+) -> Json<Option<video::Model>> {
+    let video_id = video_id.0.video_id;
     let video = read_video(&db, &video_id).await;
-    video
+    Json(video)
 }
 
 #[tokio::main]
@@ -39,20 +50,19 @@ async fn main() {
         .min_connections(3)
         .sqlx_logging(true);
 
-    let db = Database::connect(opt).await.unwrap();
-
-    let video_id = "aaa";
-    let video = read_video(&db, video_id).await;
-
-    println!("{:?}", video);
+    let db = Database::connect(opt)
+        .await
+        .expect("Database connection failed");
 
     let app = Router::new()
         .route("/", get(root))
         .route("/video", get(get_video))
-        .layer(Extension(db));
+        .layer(ServiceBuilder::new().layer(Extension(db)));
+
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     tracing_subscriber::fmt::init();
     tracing::info!("listening on {}", addr);
+
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
