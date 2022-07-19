@@ -2,7 +2,7 @@ use crate::models;
 
 use csv::QuoteStyle;
 use serde::Deserialize;
-use serde_with::chrono::datetime_utc_ts_seconds_from_any;
+use serde_with::chrono_0_4::datetime_utc_ts_seconds_from_any;
 use std::fs::{File, OpenOptions};
 use std::io::Read;
 use std::path::Path;
