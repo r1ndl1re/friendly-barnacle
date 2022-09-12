@@ -35,8 +35,8 @@ CREATE TABLE IF NOT EXISTS video_tag_relation (
     tag_id INTEGER NOT NULL,
     CONSTRAINT pk_video_tag_relation PRIMARY KEY (id),
     CONSTRAINT un1_video_tag_relation UNIQUE (video_id, tag_id),
-    CONSTRAINT fk1_video_tag_relation FOREIGN KEY (video_id) REFERENCES video (id),
-    CONSTRAINT fk2_video_tag_relation FOREIGN KEY (tag_id) REFERENCES tag (id)
+    CONSTRAINT fk1_video_tag_relation FOREIGN KEY (video_id) REFERENCES video (id) ON DELETE CASCADE,
+    CONSTRAINT fk2_video_tag_relation FOREIGN KEY (tag_id) REFERENCES tag (id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS video_2021 (

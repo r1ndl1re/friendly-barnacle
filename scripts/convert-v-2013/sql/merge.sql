@@ -165,7 +165,6 @@ INSERT INTO tag_intedgrated (code, tag_name) SELECT code, tag_name FROM tag_2018
 INSERT INTO tag_intedgrated (code, tag_name) SELECT code, tag_name FROM tag_2016 ON CONFLICT DO NOTHING;
 INSERT INTO tag_intedgrated (code, tag_name) SELECT code, tag_name FROM tag_2013 ON CONFLICT DO NOTHING;
 
-EXPLAIN
 INSERT INTO video_tag_relation (
     video_id
 ,   tag_id
