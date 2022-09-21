@@ -10,7 +10,6 @@ use axum::{
 };
 use entity::{
     prelude::*,
-    tag,
     video::{self, VideoToTag},
 };
 use sea_orm::{
@@ -22,7 +21,7 @@ use tower::ServiceBuilder;
 #[derive(Serialize)]
 struct VideoResponse {
     video: video::Model,
-    tag: Vec<tag::Model>,
+    tags: Vec<String>,
 }
 
 async fn read_video(db: &DatabaseConnection, video_id: &str) -> VideoResponse {
@@ -30,17 +29,18 @@ async fn read_video(db: &DatabaseConnection, video_id: &str) -> VideoResponse {
         .filter(video::Column::Code.eq(video_id))
         .one(db)
         .await
-        .unwrap();
-    let tag = video
-        .clone()
-        .unwrap()
-        .find_linked(VideoToTag)
-        .all(db)
-        .await
-        .unwrap();
+        .expect("unable to query video information");
+    let tags = match &video {
+        Some(x) => x
+            .find_linked(VideoToTag)
+            .all(db)
+            .await
+            .expect("unable to query tag information"),
+        None => Vec::new(),
+    };
     VideoResponse {
         video: video.unwrap(),
-        tag: tag.to_vec(),
+        tags: tags.into_iter().map(|x| x.name).collect(),
     }
 }
 
