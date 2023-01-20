@@ -5,6 +5,8 @@ services:
     build:
       context: .
       dockerfile: postgres.Dockerfile
+    command: >
+      -c max_wal_size=30GB
     restart: always
     environment:
       POSTGRES_USER:
